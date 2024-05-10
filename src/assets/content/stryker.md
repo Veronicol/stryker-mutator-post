@@ -2,7 +2,7 @@
 
 _Exploramos las ventajas de utilizar una herramienta como Stryker para aportar fiabilidad a los test unitarios de nuestro código mediante las pruebas de mutaciones._
 
-Supongamos que tenemos un proyecto con una buena batería de tests unitarios, que nos ha asegurado una cobertura de código muy alta (es decir, las lineas de código que han ejecutado nuestros test). Estamos satisfechos con ese dato, y pensamos que podremos pasar la noche tranquilos, sin tener pesadillas con bugs inesperados. Pero antes de cerrar los ojos para dormir, una duda nos asalta:
+Supongamos que tenemos un proyecto con una buena batería de tests unitarios, que nos ha asegurado una [cobertura de código](https://www.atlassian.com/es/continuous-delivery/software-testing/code-coverage) muy alta. Estamos satisfechos con ese dato, y pensamos que podremos pasar la noche tranquilos, sin tener pesadillas con bugs inesperados. Pero antes de cerrar los ojos para dormir, una duda nos asalta:
 
 ## ¿Quién testea los tests?
 
@@ -13,13 +13,13 @@ Mi resupesta a la última pregunta es... no necesariamente. Veámoslo en un par 
 1. Nuestro test puede cubrir "falsos positivos" 🥸:<br/>
    dada esta función que retorna si el agua está congelada según una temperatura dada:
 
-   ```javascript
+   ```typescript
    const isFrozenWater = (waterTemperature: number) => waterTemperature <= 0;
    ```
 
    podemos obtener un 100% de cobertura de la función únicamente añadiendo este test:
 
-   ```javascript
+   ```typescript
    test("should return true when the temperature of the water is -15ºC", () => {
      const isIce = isFrozenWater(-15);
      expect(isIce).toBe(true);
@@ -28,7 +28,7 @@ Mi resupesta a la última pregunta es... no necesariamente. Veámoslo en un par 
 
    pero, ¿qué pasaría si la función `isFrozenWater` se modificara por error?
 
-   ```javascript
+   ```typescript
    const isFrozenWater = (waterTemperature: number) => waterTemperature < 0;
    ```
 
@@ -38,7 +38,7 @@ Mi resupesta a la última pregunta es... no necesariamente. Veámoslo en un par 
    ¿quién no se ha encontrado alguna vez un repositorio con tests sin ningún expect asociado, añadidos únicamente con objeto de recorrer el código y cumplir con la cobertura mínima que establece el CI/CD?
    Dada la misma función `isFrozenWater` del punto anterior, podríamos conseguir un 100% de cobertura con este test:
 
-   ```javascript
+   ```typescript
    test("should return true when the temperature of the water is -15ºC", () => {
      const isIce = isFrozenWater(-15);
      //usamos un fake expect que nunca fallará, y que es agnóstico a lo que se pretende testear 😵
@@ -48,7 +48,7 @@ Mi resupesta a la última pregunta es... no necesariamente. Veámoslo en un par 
 
    o, incluso, con éste:
 
-   ```javascript
+   ```typescript
    test("should return true when the temperature of the water is -15ºC", () => {
      const isIce = isFrozenWater(-15);
      //sólo se ejecuta la función, no se testea nada 😱
@@ -59,7 +59,7 @@ Mi resupesta a la última pregunta es... no necesariamente. Veámoslo en un par 
 
 Las pruebas de mutación consisten en introducir pequeñas alteraciones (o **_mutantes_**) en el código que se va a testear para, a continuación, ejecutar las pruebas unitarias con el código modificado. Cada mutante debería hacer que algún test falle; en ese caso, se ha eliminado (_mutant is killed_), de lo contrario, ha sobrevivido (_mutant survived_).
 
-De esta forma, estamos generando una nueva medida de calidad, mucho más fiable que la cobertura, llamada "% de mutantes eliminados" (_% of mutants killed_). Nuestro código será más seguro cuanto más cercano esté este índice al 100%.
+De esta forma, estamos generando una nueva medida de calidad, mucho más fiable que la cobertura, llamada "% de mutantes eliminados" (_% of mutants killed_ o _mutation score_). Nuestro código será más seguro cuanto más cercano esté este índice al 100%.
 
 Estos son los mutantes más comunes que podemos encontrar en este tipo de pruebas:
 | Original | Mutante |
@@ -121,7 +121,7 @@ Se han creado 5 mutantes para el método `isFrozenWater`, y nuestro test ha podi
   ![mutant survived 01](../images/03-01_mutant_survived.png)
   Para eliminar este mutante, vamos a añadir un test con un valor "de borde", que compruebe qué ocurre cuando la temperatura es 0ºC:
 
-  ```javascript
+  ```typescript
   test("should return true when the temperature of the water is 0ºC", () => {
     const isIce = isFrozenWater(0);
     expect(isIce).toBe(true);
@@ -131,7 +131,7 @@ Se han creado 5 mutantes para el método `isFrozenWater`, y nuestro test ha podi
   ![mutant survived 02](../images/03-02_mutant_survived.png)
   Para eliminar este mutante, vamos a añadir un test que compruebe qué ocurre cuando la temperatura es mayor a 0ºC:
 
-  ```javascript
+  ```typescript
   test("should return false when the temperature of the water is 15ºC", () => {
     const isIce = isFrozenWater(15);
     expect(isIce).toBe(false);
@@ -140,7 +140,7 @@ Se han creado 5 mutantes para el método `isFrozenWater`, y nuestro test ha podi
 
   Tras añadir los dos nuevos test, si volvemos a ejecutar Stryker, veremos que el "mutation score" ha subido al 100%:
 
-![final report](./images/04_report_100.png)
+![final report](../images/04_report_100.png)
 Igual que al inicio, tenemos cobertura del 100% del código, pero ahora nuestras pruebas unitarias son mucho más robustas.
 
 ## Consideraciones a tener en cuenta
@@ -154,8 +154,9 @@ Además de la propia configuración de Stryker, debemos tener en cuenta que, deb
 
 ## Conclusiones
 
-Como hemos visto, las pruebas de mutación son útiles para medir la calidad de nuestros test unitarios, comprobar que son efectivos y que no los hemos metido con el único objetivo de aumentar la cobertura de nuestro proyecto. Stryker es una herramienta muy potente y de uso sencillo para implementar estas pruebas en Javascript, y nos ayuda a encontrar tests que se nos han olvidado y asegurar más nuestro código en las zonas más críticas.
-pero tenemos que saber interpretar los datos que nos da y decidir si debemos añadir tests, o bien modificar nuestro código para que mate todas las mutaciones sin perder legibilidad.
+Como hemos visto, las pruebas de mutación son útiles para medir la calidad de nuestros test unitarios, comprobar que son efectivos y que se han añadido con el único objetivo de aumentar la cobertura de nuestro proyecto. Stryker es una herramienta muy potente y de uso sencillo para implementar estas pruebas en Javascript, y nos ayuda a encontrar tests que se nos han olvidado y asegurar más nuestro código en las zonas más críticas.
+
+Más que intentar alcanzar un 100% de Mutation Score, debemos decidir sobre qué parte del código aplicarlo, cuándo hacerlo, y saber interpretar los resultados que nos aporta, para actuar de la mejor forma posible para mejorarlos: bien añadir tests, bien modificar el código para eliminar las mutaciones sin perder legibilidad.
 
 ## Bonus Track
 
