@@ -6,7 +6,7 @@ const startApp = () => {
   const isIce = isFrozenWater(temp);
   console.log(
     `When the temperature of the water is ${temp}, it is ${
-      isIce ? "" : "not"
+      isIce ? "" : "not "
     }frozen`
   );
 };
